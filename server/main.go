@@ -6,10 +6,8 @@ import (
 	"bufio"
 	"fmt"
 	"log"
-	"math/rand"
 	"net"
 	"os"
-	"time"
 )
 
 const (
@@ -20,7 +18,7 @@ const (
 
 func main() {
 	// Start the server and listen for incoming connections.
-	fmt.Println("Server Starting on port", connPort)
+	fmt.Println("Starting", connType, "server on port", connPort)
 	l, err := net.Listen(connType, connHost+":"+connPort)
 	if err != nil {
 		fmt.Println("Error listening:", err.Error())
@@ -29,10 +27,7 @@ func main() {
 	// Close the listener when the application closes.
 	defer l.Close()
 
-	// Seed the random number generator.
-	rand.Seed(time.Now().Unix())
-
-	// Concurrently handle client connections.
+	// run loop forever, until exit.
 	for {
 		// Listen for an incoming connection.
 		c, err := l.Accept()
@@ -40,8 +35,9 @@ func main() {
 			fmt.Println("Error connecting:", err.Error())
 			return
 		}
+		fmt.Println("Client connected.")
 
-		// Handle connections in a new goroutine.
+		// Handle connections concurrently in a new goroutine.
 		go handleConnection(c)
 	}
 }
@@ -59,15 +55,13 @@ func handleConnection(conn net.Conn) {
 	}
 
 	// Concatenate the response message.
-	message := string(bufferBytes)
-	clientAddr := conn.RemoteAddr().String()
-	response := message + " from " + clientAddr + "\n"
+	response := string(bufferBytes) + " from " + conn.RemoteAddr().String() + "\n"
 
 	// Print the response message.
 	log.Println(response)
 
 	// Send the response message to the client.
-	conn.Write([]byte("you sent: " + response))
+	conn.Write([]byte(response))
 
 	// Restart the process if the client stays connected.
 	handleConnection(conn)
