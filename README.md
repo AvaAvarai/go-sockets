@@ -1,11 +1,11 @@
 # go-sockets
-#### Concurrent socket server and socket client interfaces in GoLang.
+#### Socket server-client interfaces in GoLang, supporting TCP protocols. Currently transfers a user entered message to the server and back to the client inorder to demonstrate the socket interface connection.
 
 ## Server
-#### Stand-alone concurrent socket server in GoLang.
+#### Socket server in GoLang, concurrently handles clients, receives messages from each, and returns the message back in reply.
 
 ## Client
-#### Stand-alone socket client in GoLang.
+#### Socket client in GoLang, prompts for and transfers a message to the server and displays the returned reply.
 
 ## License
 #### Available under the GPL-3.0 License, please see LICENSE.

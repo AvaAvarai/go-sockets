@@ -1,5 +1,5 @@
-// Package main is the entry-point for the go-sockets project.
-// go-sockets available under the GNU GENERAL PUBLIC LICENSE.
+// Package main is the entry-point for the go-sockets server sub-project.
+// The go-sockets project is available under the GPL-3.0 License in LICENSE.
 package main
 
 import (
@@ -10,6 +10,7 @@ import (
 	"os"
 )
 
+// Application constants, defining host, port, and protocol.
 const (
 	connHost = "localhost"
 	connPort = "8080"
@@ -18,7 +19,7 @@ const (
 
 func main() {
 	// Start the server and listen for incoming connections.
-	fmt.Println("Starting", connType, "server on port", connPort)
+	fmt.Println("Starting " + connType + " server on " + connHost + ":" + connPort)
 	l, err := net.Listen(connType, connHost+":"+connPort)
 	if err != nil {
 		fmt.Println("Error listening:", err.Error())
@@ -37,32 +38,32 @@ func main() {
 		}
 		fmt.Println("Client connected.")
 
+		// Print client connection address.
+		fmt.Println("Client " + c.RemoteAddr().String() + " connected.")
+
 		// Handle connections concurrently in a new goroutine.
 		go handleConnection(c)
 	}
 }
 
-// handleConnection handles the logic handling for a single connection request.
+// handleConnection handles logic for a single connection request.
 func handleConnection(conn net.Conn) {
-	// Read in until a new-line character.
-	bufferBytes, err := bufio.NewReader(conn).ReadBytes('\n')
+	// Buffer client input until a newline.
+	buffer, err := bufio.NewReader(conn).ReadBytes('\n')
 
-	// Close down left clients.
+	// Close left clients.
 	if err != nil {
 		fmt.Println("Client left.")
 		conn.Close()
 		return
 	}
 
-	// Concatenate the response message.
-	response := string(bufferBytes) + " from " + conn.RemoteAddr().String() + "\n"
+	// Print response message, stripping newline character.
+	log.Println("Client message:", string(buffer[:len(buffer)-1]))
 
-	// Print the response message.
-	log.Println(response)
+	// Send response message to the client.
+	conn.Write(buffer)
 
-	// Send the response message to the client.
-	conn.Write([]byte(response))
-
-	// Restart the process if the client stays connected.
+	// Restart the process.
 	handleConnection(conn)
 }
