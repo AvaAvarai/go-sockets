@@ -8,4 +8,4 @@
 #### Socket client in GoLang, prompts for and transfers a message to the server and displays the returned reply.
 
 ## License
-#### Available under the GPL-3.0 License, please see LICENSE.
+#### Available under the MIT License, please see LICENSE.
