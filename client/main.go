@@ -1,5 +1,3 @@
-// Package main is the entry-point for the go-sockets client sub-project.
-// The go-sockets project is available under the GPL-3.0 License in LICENSE.
 package main
 
 import (
@@ -10,40 +8,69 @@ import (
 	"os"
 )
 
-// Application constants, defining host, port, and protocol.
 const (
 	connHost = "localhost"
 	connPort = "8080"
 	connType = "tcp"
 )
 
+// ANSI escape codes for text colors and cursor movement
+const (
+	Blue      = "\033[34m"
+	Reset     = "\033[0m"
+	CursorUp  = "\033[1A"
+	ClearLine = "\033[2K"
+)
+
+func listenForMessages(conn net.Conn, myColor string) {
+	reader := bufio.NewReader(conn)
+	for {
+		message, err := reader.ReadString('\n')
+		if err != nil {
+			log.Println("Disconnected from server.")
+			conn.Close()
+			os.Exit(1)
+		}
+
+		// Move the cursor up to overwrite the "Text to send:" prompt
+		fmt.Print(CursorUp + ClearLine)
+
+		// Use the color assigned by the server
+		fmt.Println(myColor + message + Reset)
+
+		// Reprint the prompt for the user
+		fmt.Print("Text to send: ")
+	}
+}
+
 func main() {
-	// Start the client and connect to the server.
 	fmt.Println("Connecting to", connType, "server", connHost+":"+connPort)
 	conn, err := net.Dial(connType, connHost+":"+connPort)
 	if err != nil {
-		fmt.Println("Error connecting:", err.Error())
-		os.Exit(1)
+		log.Fatalf("Error connecting: %v", err)
 	}
+	defer conn.Close()
 
-	// Create new reader from Stdin.
-	reader := bufio.NewReader(os.Stdin)
+	// Read the color assigned by the server
+	myColor, _ := bufio.NewReader(conn).ReadString('\n')
+	myColor = myColor[:len(myColor)-1] // Remove newline
 
-	// run loop forever, until exit.
+	go listenForMessages(conn, myColor)
+
+	inputReader := bufio.NewReader(os.Stdin)
 	for {
-		// Prompting message.
 		fmt.Print("Text to send: ")
+		input, err := inputReader.ReadString('\n')
+		if err != nil {
+			log.Println("Error reading input:", err)
+			return
+		}
 
-		// Read in input until newline, Enter key.
-		input, _ := reader.ReadString('\n')
-
-		// Send to socket connection.
+		// Send the message to the server
 		conn.Write([]byte(input))
 
-		// Listen for relay.
-		message, _ := bufio.NewReader(conn).ReadString('\n')
-
-		// Print server relay.
-		log.Print("Server relay: " + message)
+		// Print the user's own message without color (on a new line)
+		fmt.Print(CursorUp + ClearLine)
+		fmt.Println("You: " + input[:len(input)-1]) // Remove newline from input
 	}
 }
