@@ -35,7 +35,7 @@ Example chat interaction with two clients.
 3. **Run the Server**:
 
    ```bash
-   go run server.go
+   go run server\main.go
    ```
 
    This starts the server on `localhost:8080`.
@@ -45,7 +45,7 @@ Example chat interaction with two clients.
    In a new terminal window or instance:
 
    ```bash
-   go run client.go
+   go run client\main.go
    ```
 
    This connects the client to the server. You can run multiple clients to simulate a chat environment.
